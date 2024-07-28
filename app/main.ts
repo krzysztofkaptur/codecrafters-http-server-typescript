@@ -15,7 +15,13 @@ const server = net.createServer(socket => {
         `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${msg.length}\r\n\r\n${msg}`
       )
     } else if (path.includes('user-agent')) {
-      const userAgent = dataStr.split('User-Agent')[1]
+      const userAgent = dataStr
+        .split('User-Agent:')[1]
+        .replace(/\r/g, '')
+        .replace(/\n/g, '')
+        .trim()
+
+      console.log(userAgent)
 
       socket.write(
         `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${userAgent.length}\r\n\r\n${userAgent}`
