@@ -30,7 +30,7 @@ const server = net.createServer(socket => {
       )
     } else if (pathStr.includes('files')) {
       const fileName = pathStr.split('files/')[1]
-      const tmpFolder = path.join(__dirname, 'tmp')
+      const tmpFolder = path.join(__dirname, '..', 'tmp')
 
       if (fs.existsSync(`${tmpFolder}/${fileName}`)) {
         const fileContent = fs.readFileSync(`${tmpFolder}/${fileName}`, 'utf-8')
