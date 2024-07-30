@@ -42,7 +42,7 @@ const server = net.createServer(socket => {
           socket.write(gzipMsg)
         } else {
           socket.write(
-            `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${body.length}\r\n\r\n${body}`
+            `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${msg?.length}\r\n\r\n${msg}`
           )
         }
 
