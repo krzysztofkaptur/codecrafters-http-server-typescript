@@ -7,7 +7,7 @@ const server = net.createServer(socket => {
     const dataStr = data.toString()
     const pathStr = dataStr.split(' ')[1]
     const method = dataStr.split(' ')[0]
-    const acceptEncoding = dataStr.split('\r\n')?.[dataStr.split('\r\n')?.findIndex(item => item.includes("Accept-Encoding"))].split(": ")[1] || ''
+    const acceptEncoding = dataStr.split('\r\n')?.[dataStr.split('\r\n')?.findIndex(item => item.includes("Accept-Encoding"))]?.split(": ")?.[1] || ''
 
     if (method === 'GET') {
       if (pathStr === '/') {
