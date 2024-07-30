@@ -7,7 +7,7 @@ const server = net.createServer(socket => {
     const dataStr = data.toString()
     const pathStr = dataStr.split(' ')[1]
     const method = dataStr.split(' ')[0]
-    const acceptEncoding = dataStr.split(' ')?.[dataStr.split(" ")?.findIndex(item => item.includes("Accept-Encoding")) + 1] || ''
+    const acceptEncoding = dataStr.split(' ')?.[dataStr.split(" ")?.findIndex(item => item.includes("Accept-Encoding")) + 1].replace(/\r\n/g, '') || ''
 
     if (method === 'GET') {
       if (pathStr === '/') {
@@ -29,8 +29,7 @@ const server = net.createServer(socket => {
       } else if (pathStr.includes('user-agent')) {
         const userAgent = dataStr
           .split('User-Agent:')[1]
-          .replace(/\r/g, '')
-          .replace(/\n/g, '')
+          .replace(/\r\n/g, '')
           .trim()
 
         socket.write(
