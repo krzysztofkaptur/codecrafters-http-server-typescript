@@ -11,26 +11,29 @@ function deconstructData(data: Buffer) {
   const body = dataArr[dataArr.length - 1]
   const encoding = dataArr.find(item => item.includes('Accept-Encoding'))?.split(': ')?.[1]
   const userAgent = dataArr.find(item => item.includes('User-Agent'))?.split(': ')?.[1]
+  const msg = path?.split('/')?.[path?.split('/').length - 1]
+
 
   return {
     method,
     path,
     body,
     encoding,
-    userAgent
+    userAgent,
+    msg
   }
 }
 
 const server = net.createServer(socket => {
   socket.on('data', data => {
-    const { method, path, body, encoding, userAgent } = deconstructData(data)
+    const { method, path, body, encoding, userAgent, msg } = deconstructData(data)
     
     if (method === 'GET') {
       if (path === '/') {
         socket.write('HTTP/1.1 200 OK\r\n\r\n')
       } else if (path?.includes('echo')) {
-        if(encoding?.includes('gzip')) {
-          const buf = Buffer.from(body, 'utf-8')
+        if(encoding?.includes('gzip') && msg) {
+          const buf = Buffer.from(msg, 'utf-8')
           const gzipMsg = zlib.gzipSync(buf)
 
           socket.write(
