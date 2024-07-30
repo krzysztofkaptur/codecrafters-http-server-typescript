@@ -7,7 +7,7 @@ const server = net.createServer(socket => {
     const dataStr = data.toString()
     const pathStr = dataStr.split(' ')[1]
     const method = dataStr.split(' ')[0]
-    const acceptEncoding = dataStr.split(' ')?.[dataStr.split(" ")?.findIndex(item => item.includes("Accept-Encoding")) + 1].replace(/\r\n/g, '') || ''
+    const acceptEncoding = dataStr.split('\r\n')?.[dataStr.split('\r\n')?.findIndex(item => item.includes("Accept-Encoding"))].split(": ")[1] || ''
 
     if (method === 'GET') {
       if (pathStr === '/') {
@@ -16,9 +16,9 @@ const server = net.createServer(socket => {
         const response = pathStr.split('/')
         const msg = response[response.length - 1]
 
-        if(acceptEncoding === 'gzip') {
+        if(acceptEncoding.includes('gzip')) {
           socket.write(
-            `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: ${acceptEncoding}\r\nContent-Length: ${msg.length}\r\n\r\n${msg}`
+            `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\nContent-Length: ${msg.length}\r\n\r\n${msg}`
           )
         } else {
           socket.write(
