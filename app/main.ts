@@ -7,13 +7,21 @@ const METHODS = {
   POST: 'POST'
 } as const
 
-type METHODS = typeof METHODS[keyof typeof METHODS]
+type Method = typeof METHODS[keyof typeof METHODS]
+
+const STATUSES = {
+  200: "200 OK",
+  201: "201 Created",
+  404: "404 Not Found"
+} as const
+
+type Status = keyof typeof STATUSES
 
 function deconstructData(data: Buffer) {
   const dataStr = data.toString()
   const dataArr = dataStr.split('\r\n')
   
-  const method = dataArr.find(item => item.includes('HTTP'))?.split(' ')[0] as METHODS
+  const method = dataArr.find(item => item.includes('HTTP'))?.split(' ')[0] as Method
   const path = dataArr.find(item => item.includes('HTTP'))?.split(' ')[1]
   const body = dataArr[dataArr.length - 1]
   const encoding = dataArr.find(item => item.includes('Accept-Encoding'))?.split(': ')?.[1]
@@ -30,13 +38,17 @@ function deconstructData(data: Buffer) {
   }
 }
 
+function writeResponse(socket: net.Socket, status: Status) {
+  socket.write(`HTTP/1.1 ${STATUSES[status]}\r\n\r\n`)
+}
+
 const server = net.createServer(socket => {
   socket.on('data', data => {
     const { method, path, body, encoding, userAgent, msg } = deconstructData(data)
     
     if (method === METHODS.GET) {
       if (path === '/') {
-        socket.write('HTTP/1.1 200 OK\r\n\r\n')
+        writeResponse(socket, 200)
       } else if (path?.includes('echo')) {
         if(encoding?.includes('gzip') && msg) {
           const buf = Buffer.from(msg, 'utf-8')
@@ -69,10 +81,10 @@ const server = net.createServer(socket => {
             `HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: ${fileContent.length}\r\n\r\n${fileContent}`
           )
         } else {
-          socket.write('HTTP/1.1 404 Not Found\r\n\r\n')
+          writeResponse(socket, 404)
         }
       } else {
-        socket.write('HTTP/1.1 404 Not Found\r\n\r\n')
+        writeResponse(socket, 404)
       }
     } else if (method === METHODS.POST) {
       if (path?.includes('files')) {
@@ -81,7 +93,7 @@ const server = net.createServer(socket => {
 
         fs.writeFileSync(`${tmpFolder}/${fileName}`, body)
 
-        socket.write('HTTP/1.1 201 Created\r\n\r\n')
+        writeResponse(socket, 201)
       }
     }
   })
