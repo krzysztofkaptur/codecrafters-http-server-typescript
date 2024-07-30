@@ -2,17 +2,23 @@ import * as net from 'net'
 import fs from 'node:fs'
 import zlib from 'zlib'
 
+const METHODS = {
+  GET: 'GET',
+  POST: 'POST'
+} as const
+
+type METHODS = typeof METHODS[keyof typeof METHODS]
+
 function deconstructData(data: Buffer) {
   const dataStr = data.toString()
   const dataArr = dataStr.split('\r\n')
   
-  const method = dataArr.find(item => item.includes('HTTP'))?.split(' ')[0]
+  const method = dataArr.find(item => item.includes('HTTP'))?.split(' ')[0] as METHODS
   const path = dataArr.find(item => item.includes('HTTP'))?.split(' ')[1]
   const body = dataArr[dataArr.length - 1]
   const encoding = dataArr.find(item => item.includes('Accept-Encoding'))?.split(': ')?.[1]
   const userAgent = dataArr.find(item => item.includes('User-Agent'))?.split(': ')?.[1]
   const msg = path?.split('/')?.[path?.split('/').length - 1]
-
 
   return {
     method,
@@ -28,7 +34,7 @@ const server = net.createServer(socket => {
   socket.on('data', data => {
     const { method, path, body, encoding, userAgent, msg } = deconstructData(data)
     
-    if (method === 'GET') {
+    if (method === METHODS.GET) {
       if (path === '/') {
         socket.write('HTTP/1.1 200 OK\r\n\r\n')
       } else if (path?.includes('echo')) {
@@ -68,7 +74,7 @@ const server = net.createServer(socket => {
       } else {
         socket.write('HTTP/1.1 404 Not Found\r\n\r\n')
       }
-    } else if (method === 'POST') {
+    } else if (method === METHODS.POST) {
       if (path?.includes('files')) {
         const fileName = path.split('files/')[1]
         const tmpFolder = process.argv[3]
