@@ -25,16 +25,12 @@ const server = net.createServer(socket => {
   socket.on('data', data => {
     const { method, path, body, encoding, userAgent } = deconstructData(data)
     
-
     if (method === 'GET') {
       if (path === '/') {
         socket.write('HTTP/1.1 200 OK\r\n\r\n')
       } else if (path?.includes('echo')) {
-        const response = path.split('/')
-        const msg = response[response.length - 1]
-
         if(encoding?.includes('gzip')) {
-          const buf = Buffer.from(msg, 'utf-8')
+          const buf = Buffer.from(body, 'utf-8')
           const gzipMsg = zlib.gzipSync(buf)
           
           socket.write(
@@ -43,7 +39,7 @@ const server = net.createServer(socket => {
           socket.write(gzipMsg)
         } else {
           socket.write(
-            `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${msg.length}\r\n\r\n${msg}`
+            `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${body.length}\r\n\r\n${body}`
           )
         }
 
