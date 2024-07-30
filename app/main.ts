@@ -1,6 +1,6 @@
 import * as net from 'net'
 import fs from 'node:fs'
-import path from 'path'
+import zlib from 'zlib'
 
 const server = net.createServer(socket => {
   socket.on('data', data => {
@@ -17,9 +17,13 @@ const server = net.createServer(socket => {
         const msg = response[response.length - 1]
 
         if(acceptEncoding.includes('gzip')) {
+          const buf = Buffer.from(msg, 'utf-8')
+          const gzipMsg = zlib.gzipSync(buf)
+          
           socket.write(
-            `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\nContent-Length: ${msg.length}\r\n\r\n${msg}`
+            `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\nContent-Length: ${gzipMsg.length}\r\n\r\n`
           )
+          socket.write(gzipMsg)
         } else {
           socket.write(
             `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${msg.length}\r\n\r\n${msg}`
